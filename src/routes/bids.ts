@@ -1,18 +1,17 @@
 import express, { Request, Response } from "express";
-import { dbconnect } from "../db/dbconnect";
+import { dbConnect } from "../db/dbconnect";
 import { ObjectId } from "mongodb";
 
 const router = express.Router();
 
 router.get("/", async (req: Request, res: Response) => {
-    const db = await dbconnect();
+    const db = await dbConnect();
     const rides = await db.collection("rides").find({}).toArray();
-    
     res.json(rides).status(200);
 });
 
 router.get("/client/:id", async (req: Request, res: Response) => {
-    const db = await dbconnect();
+    const db = await dbConnect();
     const { id: clientId } = req.params;
     const rides = await db.collection("rides").find({ clientId }).toArray();
     
@@ -20,7 +19,7 @@ router.get("/client/:id", async (req: Request, res: Response) => {
 });
 
 router.patch("/:id", async (req: Request, res: Response) => {
-    const db = await dbconnect();
+    const db = await dbConnect();
     const { fleetId } = req.body;
     const fleet = await db.collection("fleets").findOne({ id: fleetId });
     
@@ -46,11 +45,13 @@ router.patch("/:id", async (req: Request, res: Response) => {
             },
         ]
     ).toArray();
-
-    bids.id = 'bid' + (currBids[0].bidsCount + 1);
-    const update = { $push: { bids } };
+    if (!currBids[0]?.bidsCount) {
+        bids.id = 'bid1';
+    } else {
+        bids.id = 'bid' + (currBids[0]?.bidsCount + 1);
+    }
+    const update = { $push: { bids: bids } };
     const result = await db.collection("rides").updateOne(query, update);
-    
     res.json(result).status(200);
 });
 

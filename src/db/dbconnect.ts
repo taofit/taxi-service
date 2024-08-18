@@ -1,6 +1,6 @@
-import {MongoClient} from 'mongodb';
+import {Db, MongoClient} from 'mongodb';
 
-export const dbconnect = async () => {
+export const dbConnect = async (): Promise<Db> => {
   const client = new MongoClient('mongodb://mongodb:27017');
   try {
     await client.connect();

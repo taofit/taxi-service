@@ -1,20 +1,21 @@
 import express, { Request, Response } from "express";
-import { dbconnect } from "../db/dbconnect";
+import { dbConnect } from "../db/dbconnect";
 import { ObjectId } from "mongodb";
 import exp from "constants";
+import { addIdToDoc } from "../utils/func";
 
 const router = express.Router();
 
 router.get("/", async (req: Request, res: Response) => {
-  const db = await dbconnect();
+  const db = await dbConnect();
   const rides = await db.collection("rides").find({}).toArray();
 
   res.json(rides).status(200);
 });
 
 router.post("/", async (req: Request, res: Response) => {
-  const db = await dbconnect();
-  const ride = req.body;
+  const db = await dbConnect();
+  let ride = req.body;
   const { clientId } = ride;
 
   const client = await db.collection("clients").findOne({ id: clientId});
@@ -23,11 +24,7 @@ router.post("/", async (req: Request, res: Response) => {
     return; 
   }
 
-  ride.clientId = clientId;
-  let id: string = '' + (await db.collection("rides").countDocuments() + 1);
-  id = 'ride' + id.toString();
-  ride.id = id;
-  
+  ride = await addIdToDoc(ride, db, 'rides', 'ride');
   const result = await db.collection("rides").insertOne(ride);
 
   res.json(result).status(200);

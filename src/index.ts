@@ -1,5 +1,5 @@
 import express, { Express, Request, Response } from "express";
-import { dbconnect } from "./db/dbconnect";
+import { dbConnect } from "./db/dbconnect";
 import rides from "./routes/rides";
 import clients from "./routes/clients";
 import fleets from "./routes/fleets";
@@ -10,7 +10,7 @@ const port = 4000;
 
 app.use(express.json());
 (async () => {
-    await dbconnect();
+    await dbConnect();
 })();
 
 app.get("/", (req: Request, res: Response) => {

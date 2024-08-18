@@ -1,22 +1,20 @@
 import express, { Request, Response } from "express";
-import { dbconnect } from "../db/dbconnect";
+import { dbConnect } from "../db/dbconnect";
 import { ObjectId } from "mongodb";
+import { addIdToDoc } from "../utils/func";
 
 const router = express.Router();
 
 router.get("/", async (req: Request, res: Response) => {
-    const db = await dbconnect();
+    const db = await dbConnect();
     const rides = await db.collection("fleets").find({}).toArray();
     
     res.json(rides).status(200);
 });
 
 router.post("/", async (req: Request, res: Response) => {
-    const db = await dbconnect();
-    let id: string = '' + (await db.collection("fleets").countDocuments() + 1);
-    id = 'fleet' + id.toString();
-    const fleet = { id, ...req.body };
-    
+    const db = await dbConnect();
+    const fleet = await addIdToDoc(req.body, db, 'fleets', 'fleet');
     const result = await db.collection("fleets").insertOne(fleet);
     
     res.json(result).status(200);
