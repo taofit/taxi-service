@@ -17,7 +17,6 @@ router.post("/", async (req: Request, res: Response) => {
   const db = await dbConnect();
 
   const client = await addIdToDoc(req.body, db, 'clients', 'client');
-  console.log('-----------client: ',client);
   const result = await db.collection("clients").insertOne(client);
 
   res.json(result).status(200);

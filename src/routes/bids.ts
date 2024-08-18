@@ -20,39 +20,65 @@ router.get("/client/:id", async (req: Request, res: Response) => {
 
 router.patch("/:id", async (req: Request, res: Response) => {
     const db = await dbConnect();
-    const { fleetId } = req.body;
-    const fleet = await db.collection("fleets").findOne({ id: fleetId });
+    try {
+        const { fleetId } = req.body;
+        const fleet = await db.collection("fleets").findOne({ id: fleetId });
+        
+        if (!fleet) {
+            res.status(400).json({ error: "Fleet not found" }); 
+            return; 
+        }
+        
+        const { id } = req.params;
+        const query = { _id: new ObjectId(id) };
+        const bids = req.body;
     
-    if (!fleet) {
-        res.status(400).json({ error: "Fleet not found" }); 
-        return; 
+        const currBids = await db.collection('rides').aggregate(
+            [
+                {
+                    $match: { _id: new ObjectId(id) }
+                },
+                { 
+                    $project: {
+                        bids: 1, 
+                        bidsCount: { $cond: { if: { $isArray: "$bids" }, then: {$size: "$bids" }, else: 0 } }
+                    } 
+                },
+            ]
+        ).toArray();
+        
+        if (!currBids[0]?.bidsCount) {
+            bids.id = 'bid1';
+        } else {
+            bids.id = 'bid' + (currBids[0]?.bidsCount + 1);
+        }
+        const update = { $push: { bids: bids } };
+        const result = await db.collection("rides").updateOne(query, update);
+        res.json(result).status(200);
+    } catch (error) {
+        res.status(400).json({ error: 'error try later' });
     }
-    
-    const { id } = req.params;
-    const query = { _id: new ObjectId(id) };
-    const bids = req.body;
+});
 
-    const currBids = await db.collection('rides').aggregate(
-        [
-            {
-                $match: { _id: new ObjectId(id) }
-            },
-            { 
-                $project: {
-                    bids: 1, 
-                    bidsCount: { $cond: { if: { $isArray: "$bids" }, then: {$size: "$bids" }, else: 0 } }
-                } 
-            },
-        ]
-    ).toArray();
-    if (!currBids[0]?.bidsCount) {
-        bids.id = 'bid1';
-    } else {
-        bids.id = 'bid' + (currBids[0]?.bidsCount + 1);
-    }
-    const update = { $push: { bids: bids } };
-    const result = await db.collection("rides").updateOne(query, update);
-    res.json(result).status(200);
+router.patch("/:id/accept", async (req: Request, res: Response) => {
+    const db = await dbConnect();
+    try {
+        const { id } = req.params;
+        const { bidId } = req.body;
+        const query = { _id: new ObjectId(id) };
+        const rides = await db.collection("rides").findOne(query);
+        const bids = rides?.bids;
+        const acceptedBid = bids?.find((bid: any) => bid.id === bidId);
+        if (!acceptedBid) {
+            res.status(400).json({ error: "Bid not found" });
+            return;
+        }
+        const update = { $set: { acceptedBid } };
+        const result = await db.collection("rides").updateOne(query, update);
+        res.json(result).status(200);
+    } catch (error) {
+        res.status(400).json({ error: 'error try later' });
+    }   
 });
 
 export default router;
