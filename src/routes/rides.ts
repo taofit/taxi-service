@@ -22,8 +22,12 @@ router.post("/", async (req: Request, res: Response) => {
     res.status(400).json({ error: "Client not found" });
     return; 
   }
-  
+
   ride.clientId = clientId;
+  let id: string = '' + (await db.collection("rides").countDocuments() + 1);
+  id = 'ride' + id.toString();
+  ride.id = id;
+  
   const result = await db.collection("rides").insertOne(ride);
 
   res.json(result).status(200);

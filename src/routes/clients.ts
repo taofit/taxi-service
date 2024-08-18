@@ -17,6 +17,7 @@ router.post("/", async (req: Request, res: Response) => {
   let id: string = '' + (await db.collection("clients").countDocuments() + 1);
   id = 'client' + id.toString();
   const client = { id, ...req.body };
+  
   const result = await db.collection("clients").insertOne(client);
 
   res.json(result).status(200);

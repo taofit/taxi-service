@@ -13,8 +13,11 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
     const db = await dbconnect();
-    const client = req.body;
-    const result = await db.collection("fleets").insertOne(client);
+    let id: string = '' + (await db.collection("fleets").countDocuments() + 1);
+    id = 'fleet' + id.toString();
+    const fleet = { id, ...req.body };
+    
+    const result = await db.collection("fleets").insertOne(fleet);
     
     res.json(result).status(200);
 }); 
