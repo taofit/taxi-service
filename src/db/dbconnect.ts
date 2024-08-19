@@ -11,3 +11,12 @@ export const dbConnect = async (): Promise<Db> => {
 
   return client.db('taxiService');
 }
+
+export const dbClose = async (client: MongoClient) => {
+  try {
+    await client.close();
+    console.log('Disconnected from MongoDB');
+  } catch (error) {
+    console.error('Error Disconnected from MongoDB', error);
+  }
+}

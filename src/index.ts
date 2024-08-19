@@ -1,24 +1,14 @@
 import express, { Express, Request, Response } from "express";
 import { dbConnect } from "./db/dbconnect";
-import rides from "./routes/rides";
-import clients from "./routes/clients";
-import fleets from "./routes/fleets";
-import bids from "./routes/bids";
+import service from "./server";
 
-const app: Express = express();
 const port = 4000;
 
-app.use(express.json());
 (async () => {
     await dbConnect();
 })();
 
-app.get("/", (req: Request, res: Response) => {
-    res.status(200).json("Welcome to Taxi bidding Service");
-});
-app.use("/clients", clients);
-app.use("/rides", rides);
-app.use("/fleets", fleets);
-app.use("/bids", bids);
+const apps = service;
+apps.listen(port, () => console.log(`Server listening on port ${port}`));
 
-app.listen(port, () => console.log(`Server listening on port ${port}`));
+export default apps;
