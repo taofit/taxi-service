@@ -25,19 +25,13 @@ router.get("/client/:id", async (req: Request, res: Response) => {
         return;
     }
 
-    let numOfBids = 0;
-    rides.forEach((ride: any) => {
-        if (ride.bids?.length) {
-            numOfBids += ride.bids?.length;
-        }
-    });
-
-    if (numOfBids === 0) {
+    const bids = rides.filter((ride: any) => ride.bids?.length);
+    if (bids.length === 0) {
         res.status(404).json({ error: `No bids found for client: ${clientId}` });
         return; 
     }
 
-    res.json(rides).status(200);
+    res.json(bids).status(200);
 });
 
 router.patch("/:id", async (req: Request, res: Response) => {
@@ -50,11 +44,17 @@ router.patch("/:id", async (req: Request, res: Response) => {
             res.status(400).json({ error: "Fleet not found" }); 
             return; 
         }
-        
+
         const { id: rideId } = req.params;
         const query = { id: rideId };
+        const ride = await db.collection("rides").findOne(query);
+
+        if (!ride) {    
+            res.status(400).json({ error: "Ride not found" });
+            return;
+        }   
+        
         const bids = req.body;
-    
         const currBids = await db.collection('rides').aggregate(
             [
                 {
@@ -68,7 +68,6 @@ router.patch("/:id", async (req: Request, res: Response) => {
                 },
             ]
         ).toArray();
-        
         if (!currBids[0]?.bidsCount) {
             bids.id = 'bid1';
         } else {
@@ -76,6 +75,7 @@ router.patch("/:id", async (req: Request, res: Response) => {
         }
         const update = { $push: { bids: bids } };
         await db.collection("rides").updateOne(query, update);
+        
         res.json({message: 'bid placed'}).status(200);
     } catch (error) {
         res.status(400).json({ error: 'error try later' });

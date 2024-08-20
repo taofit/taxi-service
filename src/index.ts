@@ -1,4 +1,3 @@
-import express, { Express, Request, Response } from "express";
 import { dbConnect } from "./db/dbconnect";
 import service from "./server";
 

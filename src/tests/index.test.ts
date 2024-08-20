@@ -2,21 +2,24 @@ import app from "../server";
 import request from "supertest";
 import { dbConnect } from "../db/dbconnect";
 import { Db } from "mongodb";
-import { after } from "node:test";
 
 let db: Db;
 
 beforeAll(async () => {  
     jest.resetModules();
     db = await dbConnect();
+    await clearCollections();
 });
 
 afterAll(async () => {
+    await clearCollections();
+});
+
+const clearCollections = async () => {
     await db.collection("clients").deleteMany({});
     await db.collection("fleets").deleteMany({});
     await db.collection("rides").deleteMany({});
-    await db.collection("bids").deleteMany({});
-});
+};
 
 describe("Client", () => {
     it("add a client, should return 200 OK", (done) => {
@@ -83,6 +86,24 @@ describe("Bid", () => {
                 price: 50,
             })
             .expect(200, done);
+    });
+    it("place a bid, should return Ride not found", (done) => {
+        request(app)
+            .patch("/bids/ride100")
+            .send({
+                fleetId: "fleet1",
+                price: 50,
+            })
+            .expect(400, done);
+    });
+    it("place a bid, should return Fleet not found", (done) => {
+        request(app)
+            .patch("/bids/ride1")
+            .send({
+                fleetId: "fleet100",
+                price: 50,
+            })
+            .expect(400, done);
     });
     it("accept a bid, should return 200 OK", (done) => {
         request(app)
