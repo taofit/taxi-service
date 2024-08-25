@@ -2,13 +2,16 @@ import app from "../server";
 import request from "supertest";
 import { dbConnect } from "../db/dbconnect";
 import { Db } from "mongodb";
+import { jest } from "@jest/globals";
 
 let db: Db;
+const mock = jest.fn();
 
 beforeAll(async () => {  
     jest.resetModules();
     db = await dbConnect();
     await clearCollections();
+    mock.mockReset();
 });
 
 afterAll(async () => {

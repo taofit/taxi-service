@@ -1,6 +1,6 @@
 import express, { Request, Response } from "express";
 import { dbConnect } from "../db/dbconnect";
-import { addIdToDoc } from "../utils/func";
+import { ObjectId } from "mongodb";
 
 const router = express.Router();
 
@@ -18,16 +18,16 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   const db = await dbConnect();
-  let ride = req.body;
-  const { clientId } = ride;
+  const ride = req.body;
+  let clientId = ride.clientId;
+  clientId = new ObjectId(clientId);
 
-  const client = await db.collection("clients").findOne({ id: clientId});
+  const client = await db.collection("clients").findOne({ _id: clientId });
   if (!client) {
     res.status(400).json({ error: "Client not found" });
     return; 
   }
 
-  ride = await addIdToDoc(ride, db, 'rides', 'ride');
   await db.collection("rides").insertOne(ride);
 
   res.json({message: 'ride is requested'}).status(200);

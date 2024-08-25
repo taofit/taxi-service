@@ -1,0 +1,27 @@
+[
+    {
+        "name": "City Cabs",
+        "email": "citycabs@example.com",
+        "phone": "+1112223333"
+    },
+    {
+        "name": "Quick Rides",
+        "email": "quickrides@example.com",
+        "phone": "+4445556666"
+    },
+    {
+        "name": "Metro Taxis",
+        "email": "metrotaxis@example.com",
+        "phone": "+7778889999"
+    },
+    {
+        "name": "Swift Transits",
+        "email": "swifttransits@example.com",
+        "phone": "+1234567890"
+    },
+    {
+        "name": "Express Cars",
+        "email": "expresscars@example.com",
+        "phone": "+9876543210"
+    }
+]    

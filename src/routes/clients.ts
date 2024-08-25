@@ -1,6 +1,5 @@
 import express, { Request, Response } from "express";
 import { dbConnect } from "../db/dbconnect";
-import { addIdToDoc } from "../utils/func";
 
 const router = express.Router();
 
@@ -18,9 +17,7 @@ router.get("/", async (req: Request, res: Response) => {
 
 router.post("/", async (req: Request, res: Response) => {
   const db = await dbConnect();
-
-  const client = await addIdToDoc(req.body, db, 'clients', 'client');
-  await db.collection("clients").insertOne(client);
+  await db.collection("clients").insertOne(req.body);
 
   res.json({message: 'client added'}).status(200);
 });
